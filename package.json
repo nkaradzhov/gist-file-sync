@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "commander": "^2.11.0",
+    "moment": "^2.18.1",
     "node-fetch": "^1.7.2"
   },
   "devDependencies": {},
