@@ -3,6 +3,7 @@ const fetch = require('node-fetch')
 const {promisify} = require('util')
 const fs = require('fs')
 const moment = require('moment')
+const path = require('path')
 
 const writeFile = promisify(fs.writeFile)
 const readFile = promisify(fs.readFile)
@@ -24,21 +25,23 @@ const baseUrl = 'https://api.github.com/'
 const gistId = fs.readFileSync('gist', utf8).trim()
 const specialGistUrl = baseUrl + `gists/${gistId}`
 
-const pull = async fileName => {
+const pull = async pathname => {
+  const filename = path.basename(pathname)
   const gist = await fetchJson(specialGistUrl, authenticated)
-  const file = gist.files[fileName]
-  await writeFile(file.filename, file.content, utf8)
+  const file = gist.files[filename]
+  await writeFile(pathname, file.content, utf8)
   console.log('done')
 }
 
-const push = async fileName => {
-  const content = await readFile(fileName, utf8)
+const push = async pathname => {
+  const filename = path.basename(pathname)
+  const content = await readFile(pathname, utf8)
   const response = await fetchJson(specialGistUrl, {
     ...authenticated,
     method: 'PATCH',
     body: JSON.stringify({
       files: {
-        [fileName]: {
+        [filename]: {
           content
         }
       }
@@ -77,17 +80,17 @@ const getLocalFile = async fileName => {
   }
 }
 
-const getRemoteFile = async fileName => {
+const getRemoteFile = async filename => {
   const gist = await fetchJson(specialGistUrl, authenticated)
-  const rFile = gist.files[fileName]
+  const rFile = gist.files[filename]
   if (!rFile) {
     return null
   } else {
     let currentGist = gist
     for (let h of gist.history) {
       const oldGist = await fetchJson(h.url, authenticated)
-      const oldFile = oldGist.files[fileName]
-      const currentFile = currentGist.files[fileName]
+      const oldFile = oldGist.files[filename]
+      const currentFile = currentGist.files[filename]
       if (!oldFile || currentFile.content !== oldFile.content) {
         return {content: rFile.content, mtime: currentGist.updated_at}
       }
@@ -97,27 +100,27 @@ const getRemoteFile = async fileName => {
   }
 }
 
-const sync = async fileName => {
-  const local = await getLocalFile(fileName)
+const sync = async pathname => {
+  const local = await getLocalFile(pathname)
   
   if (!local) {
     console.log('no local file, try to pull')
-    return pull(fileName)
+    return pull(pathname)
   }
-
-  const remote = await getRemoteFile(fileName)
+  const filename = path.basename(pathname)
+  const remote = await getRemoteFile(filename)
   
   if (!remote) {
     console.log('no remote file, try to push')
-    return push(fileName)
+    return push(pathname)
   }
 
   if (moment(local.mtime).isAfter(moment(remote.mtime))) {
     console.log('local file is newer, so push it')
-    return push(fileName)
+    return push(pathname)
   } else {
     console.log('remote file is newer, so pull it')
-    return pull(fileName)
+    return pull(pathname)
   }
 
 }
