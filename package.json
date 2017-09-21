@@ -1,11 +1,15 @@
 {
   "author": "Nikolay Karadzhov",
   "name": "gist-file-sync",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Synchronize your (dot)files over a github gist.",
   "main": "./lib/index.js",
   "bin": {
     "gist-file-sync": "bin/module.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hukuuu/gist-file-sync"
   },
   "dependencies": {
     "minimist": "^1.2.0",
