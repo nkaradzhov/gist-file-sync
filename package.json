@@ -1,7 +1,7 @@
 {
   "author": "Nikolay Karadzhov",
   "name": "gist-file-sync",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Synchronize your (dot)files over a github gist.",
   "main": "./lib/index.js",
   "bin": {
